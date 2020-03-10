@@ -18,6 +18,7 @@ exports.login = (req, res)=>{
                 if(resBcrypt) {
                     const token = jwt.sign({userId: user.id, admin: user.admin}, secretKey)
                     res.send({
+                        name: user.name,
                         username: user.username,
                         message: "success",
                         status: user.status,
@@ -65,7 +66,10 @@ exports.register = (req, res)=>{
                             res.send({
                                 message: "success",
                                 token: token,
-                                admin: user.admin
+                                admin: user.admin,
+                                name: user.name,
+                                username: user.username,
+                                status: user.status
                             })
                         }else{
                             res.status(400).send({
@@ -85,6 +89,27 @@ exports.register = (req, res)=>{
             res.status(401).send({
                 error: true,
                 message: "Email sudah terdaftar"
+            })
+        }
+    })
+}
+
+exports.loginToken = (req, res)=>{
+    const userId = req.user.userId
+
+    User.findOne({where: {id: userId}}).then(user => {
+        if(user){
+            res.send({
+                name: user.name,
+                username: user.username,
+                message: "success",
+                status: user.status,
+                admin: user.admin
+            })
+        }else{
+            res.status(401).send({
+                error: true,
+                message: "Wrong Token"
             })
         }
     })

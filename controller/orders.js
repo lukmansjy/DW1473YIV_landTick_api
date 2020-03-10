@@ -9,7 +9,7 @@ const {baseUrl} = require('../config/myConfig')
 exports.myTickets = (req, res) =>{
     const userId = req.user.userId
     Order.findAll({
-        attributes: ["id", "trainId", "userId", "qty", "totalPrice"],
+        attributes: ["id", "trainId", "userId", "qty", "totalPrice", "status"],
         include: [
             {
                 model: Train,
@@ -46,7 +46,7 @@ exports.payment = (req, res) => {
                 if(updated){
 
                     Order.findOne({
-                        attributes: ["id", "trainId", "userId", "qty", "totalPrice", "attachment"],
+                        attributes: ["id", "trainId", "userId", "qty", "totalPrice", "status",  "attachment"],
                         include: [
                             {
                                 model: Train,
@@ -91,7 +91,7 @@ exports.ordersAdmin = (req, res) =>{
     const admin = req.user.admin
     if(admin){
         Order.findAll({
-            attributes: ["id", "trainId", "userId", "qty", "totalPrice"],
+            attributes: ["id", "trainId", "userId", "qty", "totalPrice", "status", "attachment"],
             include: [
                 {
                     model: Train,
@@ -118,6 +118,33 @@ exports.ordersAdmin = (req, res) =>{
             message: "Your not admin"
         })
     }
+}
+
+exports.ordersUser = (req, res) =>{
+    const userId= req.user.userId
+    Order.findAll({
+        attributes: ["id", "trainId", "userId", "qty", "totalPrice", "status"],
+        include: [
+            {
+                model: Train,
+                attributes: ["id", "nameTrain", "dateStart", "startStation", "startTime", "destinationStation", "arrivalTime", "price", "typeTrainId"],
+                as: "train",
+                include: [
+                    {
+                        model: TypeTrains,
+                        attributes: ["id", "name"],
+                        as: "typeTrain"
+                    }
+                ]
+            },
+            {
+                model: User,
+                attributes: ["id", "name", "username", "email", "gender", "phone", "address"],
+                as: "user"
+            }
+        ],
+        where: {userId: userId}
+    }).then( data => { res.send(data) })
 }
 
 exports.putOrderById = (req, res) => {
@@ -167,7 +194,7 @@ exports.putOrderById = (req, res) => {
 exports.getOrderById = (req, res)=>{
     const orderId = req.params.id
     Order.findOne({
-        attributes: ["id", "trainId", "userId", "qty", "totalPrice", "attachment"],
+        attributes: ["id", "trainId", "userId", "qty", "totalPrice", "status", "attachment"],
         include: [
             {
                 model: Train,
@@ -212,7 +239,7 @@ exports.orderTicket = (req, res) =>{
             if(order){
                 const orderId = order.id
                 Order.findOne({
-                    attributes: ["id", "trainId", "userId", "qty", "totalPrice", "attachment"],
+                    attributes: ["id", "trainId", "userId", "qty", "totalPrice", "status", "attachment"],
                     include: [
                         {
                             model: Train,
